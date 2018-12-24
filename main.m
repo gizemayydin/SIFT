@@ -2,8 +2,8 @@ clear all; clc; close all;
 
 %% read the image
 %img = imread('cameraman.jpg');
-img = imread('lenna.png');
-img = rgb2gray(img);
+img = imread('cameraman.tif');
+%img = rgb2gray(img);
 img = double(img)/255;
 
 %% expand input image by a factor of two using bilinear interpolation
@@ -242,8 +242,8 @@ imgPyramid = {img, imgaussfilt(img,scales(1,2)), imgaussfilt(img,scales(1,3)),im
 gradient_magnitude = {};
 gradient_orientation = {};
 
-for i=1:1:5
-    for j=1:1:4
+for i=1:1:4
+    for j=1:1:5
         myImg = imgPyramid{i,j};
         myImg = double(myImg);
         [rows, cols, ch] = size(myImg);
@@ -259,13 +259,9 @@ for i=1:1:5
                 orientation(k,m) = angle;
             end
         end
-        if j ==4
-            gradient_magnitude = {gradient_magnitude; gradientMag};
-            gradient_orientation = {gradient_orientation; orientation};
-        else
-            gradient_magnitude = {gradient_magnitude gradientMag};
-            gradient_orientation = {gradient_orientation orientation};
-        end
+
+        gradient_magnitude{end+1} = gradientMag;
+        gradient_orientation{end+1} = orientation;
     end
 end
       
@@ -285,29 +281,30 @@ for i=1:1:size(newLocalMax,1)
     sigma = newLocalMax(i,6);
     
     %the image this point lies on and pad
-    grad_mag_img = gradient_magnitude{octaveRow, octaveCol};
-    grad_orient_img = gradient_orientation{octaveRow, octaveCol};
+    grad_mag_img = gradient_magnitude{(octaveRow-1)*5 + octaveCol};
+    grad_orient_img = gradient_orientation{(octaveRow-1)*5 + octaveCol};
     grad_mag_img = padarray(grad_mag_img,[50 50],'both');
     grad_orient_img = padarray(grad_orient_img,[50 50],'both');
     
     %the kernel we will use for gaussian weigted histogram
-    size = uint32(1.5*sigma);
-    if mod(size,2) ==0
-        size = size +1;
+    ksize = uint32(1.5*sigma);
+    if mod(ksize,2) ==0
+        ksize = ksize +1;
     end
-    kernel = fspecial('gaussian', size, sigma);
+    ksize = double(ksize);
+    kernel = fspecial('gaussian', ksize, sigma);
     
-    k = (size-1)/2;
+    k = (ksize-1)/2;
     
     xint = uint32(x);
     yint = uint32(y);
     
     grad_mag_img_window = grad_mag_img(xint+50-k:xint+50+k,yint+50-k:yint+50+k);
-    grad_orient_img_window = grad_orient_img(xint+50-k:xint+50+k,yint-k:yint+50+k);
+    grad_orient_img_window = grad_orient_img(xint+50-k:xint+50+k,yint+50-k:yint+50+k);
     
     %compute the histogram
-    for j=1:1:size(grad_orient_img_window,1)
-        for k=1:1:size(grad_orient_img_window,2)
+    for j=1:1:size(grad_orient_img_window)
+        for k=1:1:size(grad_orient_img_window)
             angle = grad_orient_img_window(j,k);
             magnitude = grad_mag_img_window(j,k);
             binNumber = ceil(angle/10)+1;
