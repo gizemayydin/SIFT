@@ -228,4 +228,3 @@ value = double(pointmax(3)) + double((1/2)*(Deriv'*offset));
                                                                                         
                                                                                         %Getting rid of low contrast keypoints
                                                                                         %Checking intensity of the points
-                                                                                        
