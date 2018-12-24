@@ -226,3 +226,121 @@ for a=1:minRow
         end
     end
 end
+
+%% Orientation Assignment                                                                                                  
+                                                                                                  
+%the eliminated keypoints are stored in: newLocalMin newLocalMax
+
+%First, the gradient directions and magnitudes should be computed for the
+%scale space.
+
+imgPyramid = {img, imgaussfilt(img,scales(1,2)), imgaussfilt(img,scales(1,3)),imgaussfilt(img,scales(1,4)),imgaussfilt(img,scales(1,5));
+    imgaussfilt(img2,scales(2,1)), imgaussfilt(img2,scales(2,2)), imgaussfilt(img2,scales(2,3)),imgaussfilt(img2,scales(2,4)),imgaussfilt(img2,scales(2,5));
+    imgaussfilt(img3,scales(3,1)),imgaussfilt(img3,scales(3,2)),imgaussfilt(img3,scales(3,3)),imgaussfilt(img3,scales(3,4)),imgaussfilt(img3,scales(3,5));
+    imgaussfilt(img4,scales(4,1)),imgaussfilt(img4,scales(4,2)),imgaussfilt(img4,scales(4,3)),imgaussfilt(img4,scales(4,4)),imgaussfilt(img4,scales(4,5))};
+
+gradient_magnitude = {};
+gradient_orientation = {};
+
+for i=1:1:5
+    for j=1:1:4
+        myImg = imgPyramid{i,j};
+        myImg = double(myImg);
+        [rows, cols, ch] = size(myImg);
+        gradientMag = zeros(rows,cols);
+        gradientMag = double(gradientMag);
+        orientation = zeros(rows,cols);
+        orientation = double(orientation);
+        for k=2:1:rows-2
+            for m=2:1:cols-2
+                magn = sqrt((myImg(k+1,m)-myImg(k-1,m))^2 + (myImg(k,m+1)-myImg(k,m-1))^2 );
+                angle = atan((myImg(k,m+1)-myImg(k,m-1))/(myImg(k+1,m)-myImg(k-1,m)));
+                gradientMag(k,m) = magn;
+                orientation(k,m) = angle;
+            end
+        end
+        if j ==4
+            gradient_magnitude = {gradient_magnitude; gradientMag};
+            gradient_orientation = {gradient_orientation; orientation};
+        else
+            gradient_magnitude = {gradient_magnitude gradientMag};
+            gradient_orientation = {gradient_orientation orientation};
+        end
+    end
+end
+      
+
+% fspecial('gaussian', size, sigma)
+% Now, orientation assignment
+%x,y,value,octave no,column in octav, scale, binNumber(for orientation)
+interest_points1 = []; %unique ones
+interest_points2 = []; %more orientation
+for i=1:1:size(newLocalMax,1)
+    histogram = zeros(36);
+    x = newLocalMax(i,1);
+    y = newLocalMax(i,2);
+    value = newLocalMax(i,3);
+    octaveRow = newLocalMax(i,4);
+    octaveCol = newLocalMax(i,5);
+    sigma = newLocalMax(i,6);
+    
+    %the image this point lies on and pad
+    grad_mag_img = gradient_magnitude{octaveRow, octaveCol};
+    grad_orient_img = gradient_orientation{octaveRow, octaveCol};
+    grad_mag_img = padarray(grad_mag_img,[50 50],'both');
+    grad_orient_img = padarray(grad_orient_img,[50 50],'both');
+    
+    %the kernel we will use for gaussian weigted histogram
+    size = uint32(1.5*sigma);
+    if mod(size,2) ==0
+        size = size +1;
+    end
+    kernel = fspecial('gaussian', size, sigma);
+    
+    k = (size-1)/2;
+    
+    xint = uint32(x);
+    yint = uint32(y);
+    
+    grad_mag_img_window = grad_mag_img(xint+50-k:xint+50+k,yint+50-k:yint+50+k);
+    grad_orient_img_window = grad_orient_img(xint+50-k:xint+50+k,yint-k:yint+50+k);
+    
+    %compute the histogram
+    for j=1:1:size(grad_orient_img_window,1)
+        for k=1:1:size(grad_orient_img_window,2)
+            angle = grad_orient_img_window(j,k);
+            magnitude = grad_mag_img_window(j,k);
+            binNumber = ceil(angle/10)+1;
+            histogram(binNumber) = histogram(binNumber) + kernel(j,k)*magnitude;
+        end
+    end
+    
+    %find the orientation
+    max = -1;
+    max_arr = []; %holds the bin indexes having max value
+    for m=1:1:size(histogram,1)
+        if histogram(m) > max
+            max = histogram(m);
+            max_arr = [max_arr m];
+        elseif histogram(m) == max
+            max_arr = [max_arr m];
+        end
+    end
+    
+    %x,y,value,octave no,column in octav, scale, binNumber(for orientation)
+    if size(max_arr) == 1
+        interest_points1 = [interest_points1;x y value octaveRow octaveCol sigma max_arr(1)];
+    else
+        interest_points1 = [interest_points1;x y value octaveRow octaveCol sigma max_arr(1)];
+        for n=2:1:size(max_arr)
+            interest_points2 = [interest_points1;x y value octaveRow octaveCol sigma max_arr(n)];
+        end
+    end
+    
+    %add the points that are above 80%
+    for o=1:1:36
+        if histogram(o) ~= max && histogram(o) >= (max*(8/10))
+            interest_points2 = [interest_points1;x y value octaveRow octaveCol sigma o];
+        end
+    end
+end
