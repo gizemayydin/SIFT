@@ -148,78 +148,78 @@ Deriv = double(Deriv);
 offset = -inv(Hessian).*Deriv;
 offset = double(offset);
 if (abs(offset(1)) < 0.5 && abs(offset(2)) < 0.5 && abs(offset(3)) < 0.5)
-value = double(pointmax(3)) + double((1/2)*(Deriv'*offset));
-                                            value = double(value);
-                                            pointmax = double(pointmax);
-                                            if(value > 0.03)
-                                            newLocalMax = [newLocalMax; pointmax(1)+offset(1) pointmax(2)+offset(2) pointmax(3) pointmax(4) pointmax(5) pointmax(6)+offset(3)];
-                                            end
-                                            end
-                                            
-                                            % thresholding to replace the point???
-                                            end
-                                            %
-                                            % [minRow, minCol] = size(localMin);
-                                            % newLocalMin = [];
-                                            % for a=1:minRow
-                                            %     %Hessian = zeros(3,3);
-                                            %     pointmin = localMin(a,:);
-                                            %     imageMin = dogPyramid{pointmin(4),pointmin(5)}(pointmin(1),pointmin(2));
-                                            %
-                                            %     Dx = (dogPyramid{pointmin(4),pointmin(5)}(pointmin(1),pointmin(2)+1)...
-                                                        %        - dogPyramid{pointmin(4),pointmin(5)}(pointmin(1),pointmin(2)-1))/2;
-                                            %
-                                            %     Dy = (dogPyramid{pointmin(4),pointmin(5)}(pointmin(1)+1,pointmin(2))...
-                                                        %        - dogPyramid{pointmin(4),pointmin(5)}(pointmin(1)+1,pointmin(2)))/2;
-                                            %
-                                            %     Ds = (dogPyramid{pointmin(4),pointmin(5)+1}(pointmin(1),pointmin(2))...
-                                                        %        - dogPyramid{pointmin(4),pointmin(5)+1}(pointmin(1),pointmin(2)))/2;
-                                            %
-                                            %     Dxx = dogPyramid{pointmin(4),pointmin(5)}(pointmin(1),pointmin(2)+1)...
-                                            %         + dogPyramid{pointmin(4),pointmin(5)}(pointmin(1),pointmin(2)-1)- 2*imageMin;
-                                            %
-                                            %     Dyy = dogPyramid{pointmin(4),pointmin(5)}(pointmin(1)+1,pointmin(2))...
-                                            %         + dogPyramid{pointmin(4),pointmin(5)}(pointmin(1)-1,pointmin(2))- 2*imageMin;
-                                            %
-                                            %     Dss = dogPyramid{pointmin(4),pointmin(5)+1}(pointmin(1),pointmin(2))...
-                                            %         + dogPyramid{pointmin(4),pointmin(5)-1}(pointmin(1),pointmin(2))- 2*imageMin;
-                                            %
-                                            %     Dxy = (dogPyramid{pointmin(4),pointmin(5)}(pointmin(1)+1,pointmin(2)+1)...
-                                                         %         -  dogPyramid{pointmin(4),pointmin(5)}(pointmin(1)+1,pointmin(2)-1)...
-                                                         %         -  dogPyramid{pointmin(4),pointmin(5)}(pointmin(1)-1,pointmin(2)+1)...
-                                                         %         +  dogPyramid{pointmin(4),pointmin(5)}(pointmin(1)-1,pointmin(2)-1))/4;
-                                            %
-                                            %     Dxs = (dogPyramid{pointmin(4),pointmin(5)+1}(pointmin(1),pointmin(2)+1)...
-                                                         %         -  dogPyramid{pointmin(4),pointmin(5)+1}(pointmin(1),pointmin(2)-1)...
-                                                         %         -  dogPyramid{pointmin(4),pointmin(5)-1}(pointmin(1),pointmin(2)+1)...
-                                                         %         +  dogPyramid{pointmin(4),pointmin(5)-1}(pointmin(1),pointmin(2)-1))/4;
-                                            %
-                                            %     Dys = (dogPyramid{pointmin(4),pointmin(5)+1}(pointmin(1)+1,pointmin(2))...
-                                                         %         -  dogPyramid{pointmin(4),pointmin(5)+1}(pointmin(1)-1,pointmin(2))...
-                                                         %         -  dogPyramid{pointmin(4),pointmin(5)-1}(pointmin(1)+1,pointmin(2))...
-                                                         %         +  dogPyramid{pointmin(4),pointmin(5)-1}(pointmin(1)-1,pointmin(2)))/4;
-                                            %
-                                            %     Hessian = [Dxx Dxy Dxs; Dxy Dyy Dys; Dxs Dxy Dss];
-                                            %     Hessian = double(Hessian);
-                                            %     Deriv = [Dx;Dy;Ds];
-                                            %     Deriv = double(Deriv);
-                                            %     offset = inv(Hessian).*Deriv;
-                                            %     offset = double(offset);
-                                            %
-                                            %     if (abs(offset(1)) < 0.5 && abs(offset(2)) < 0.5 && abs(offset(3)) < 0.5)
-                                            %         value = double(pointmin(3)) + double((1/2)*(Deriv'*offset));
-                                                                                                  %         value = double(value);
-                                                                                                  %         pointmin = double(pointmin);
-                                                                                                  %         if(value > 0.03)
-                                                                                                  %             newLocalMin = [newLocalMin; pointmin(1)+offset(1) pointmin(2)+offset(2) pointmin(3) pointmin(4) pointmin(5) pointmin(6)+offset(3)];
-                                                                                                  %         end
-                                                                                                  %     end
-                                                                                                  %
-                                                                                                  %      % thresholding to replace the point???
-                                                                                                  % end
+    value = double(pointmax(3)) + double((1/2)*(Deriv'*offset));
+    value = double(value);
+    pointmax = double(pointmax);
+    if(value > 0.03)
+        newLocalMax = [newLocalMax; pointmax(1)+offset(1) pointmax(2)+offset(2) pointmax(3) pointmax(4) pointmax(5) pointmax(6)+offset(3)];
+    end
+end
+end
+
+[minRow, minCol] = size(localMin);
+newLocalMin = [];
+for a=1:minRow
+pointmin = localMin(a,:);
+imageMin = dogPyramid{pointmin(4),pointmin(5)}(pointmin(1),pointmin(2));
+
+Dx = (dogPyramid{pointmin(4),pointmin(5)}(pointmin(1),pointmin(2)+1)...
+               - dogPyramid{pointmin(4),pointmin(5)}(pointmin(1),pointmin(2)-1))/2;
+
+Dy = (dogPyramid{pointmin(4),pointmin(5)}(pointmin(1)+1,pointmin(2))...
+               - dogPyramid{pointmin(4),pointmin(5)}(pointmin(1)+1,pointmin(2)))/2;
+
+Ds = (dogPyramid{pointmin(4),pointmin(5)+1}(pointmin(1),pointmin(2))...
+               - dogPyramid{pointmin(4),pointmin(5)+1}(pointmin(1),pointmin(2)))/2;
+
+Dxx = dogPyramid{pointmin(4),pointmin(5)}(pointmin(1),pointmin(2)+1)...
+    + dogPyramid{pointmin(4),pointmin(5)}(pointmin(1),pointmin(2)-1)- 2*imageMin;
+
+Dyy = dogPyramid{pointmin(4),pointmin(5)}(pointmin(1)+1,pointmin(2))...
+    + dogPyramid{pointmin(4),pointmin(5)}(pointmin(1)-1,pointmin(2))- 2*imageMin;
+
+Dss = dogPyramid{pointmin(4),pointmin(5)+1}(pointmin(1),pointmin(2))...
+    + dogPyramid{pointmin(4),pointmin(5)-1}(pointmin(1),pointmin(2))- 2*imageMin;
+
+Dxy = (dogPyramid{pointmin(4),pointmin(5)}(pointmin(1)+1,pointmin(2)+1)...
+                 -  dogPyramid{pointmin(4),pointmin(5)}(pointmin(1)+1,pointmin(2)-1)...
+                 -  dogPyramid{pointmin(4),pointmin(5)}(pointmin(1)-1,pointmin(2)+1)...
+                 +  dogPyramid{pointmin(4),pointmin(5)}(pointmin(1)-1,pointmin(2)-1))/4;
+
+Dxs = (dogPyramid{pointmin(4),pointmin(5)+1}(pointmin(1),pointmin(2)+1)...
+                 -  dogPyramid{pointmin(4),pointmin(5)+1}(pointmin(1),pointmin(2)-1)...
+                 -  dogPyramid{pointmin(4),pointmin(5)-1}(pointmin(1),pointmin(2)+1)...
+                 +  dogPyramid{pointmin(4),pointmin(5)-1}(pointmin(1),pointmin(2)-1))/4;
+
+Dys = (dogPyramid{pointmin(4),pointmin(5)+1}(pointmin(1)+1,pointmin(2))...
+                 -  dogPyramid{pointmin(4),pointmin(5)+1}(pointmin(1)-1,pointmin(2))...
+                 -  dogPyramid{pointmin(4),pointmin(5)-1}(pointmin(1)+1,pointmin(2))...
+                 +  dogPyramid{pointmin(4),pointmin(5)-1}(pointmin(1)-1,pointmin(2)))/4;
+
+Hessian = [Dxx Dxy Dxs; Dxy Dyy Dys; Dxs Dxy Dss];
+Hessian = double(Hessian);
+Deriv = [Dx;Dy;Ds];
+Deriv = double(Deriv);
+offset = inv(Hessian).*Deriv;
+offset = double(offset);
+
+%Eliminating edge responses
+Hessian2 = [Dxx Dxy; Dxy Dyy];
+edgeResThres = 12.2;
+myMetric = ((trace(hessian2))^2)/det(Hessian2);
+if (myMetrix > edgeResThres)
+if (abs(offset(1)) < 0.5 && abs(offset(2)) < 0.5 && abs(offset(3)) < 0.5)
+    value = double(pointmin(3)) + double((1/2)*(Deriv'*offset));
+value = double(value);
+pointmin = double(pointmin);
+if(value > 0.03)
+  newLocalMin = [newLocalMin; pointmin(1)+offset(1) pointmin(2)+offset(2) pointmin(3) pointmin(4) pointmin(5) pointmin(6)+offset(3)];
+end
+end
+end
+end
                                                                                                   
-                                                                                                  % Getting rid of low contrast keypoints
-                                                                                                  % Checking intensity of the points
+%Eliminatin edge responses
                                                                                                   
                                                                                                   
                                                                                                   
