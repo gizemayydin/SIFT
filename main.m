@@ -210,8 +210,7 @@ end
 % fspecial('gaussian', size, sigma)
 % Now, orientation assignment
 %x,y,value,octave no,column in octav, scale, binNumber(for orientation)
-interest_points1 = []; %unique ones
-interest_points2 = []; %more orientation
+interest_points = []; %unique ones
 for i=1:1:size(newLocalMax,1)
     histogram = zeros(1,36);
     x = newLocalMax(i,1);
@@ -255,27 +254,10 @@ for i=1:1:size(newLocalMax,1)
     
     %find the orientation
     max_value = max(histogram);
-    max_arr = []; %holds the bin indexes having max value
-    for m=1:1:size(histogram,2)
-        if histogram(m) == max_value
-            max_arr = [max_arr m];
-        end
-    end
-    
-    %x,y,value,octave no,column in octav, scale, binNumber(for orientation)
-    if size(max_arr) == 1
-        interest_points1 = [interest_points1;x y value octaveRow octaveCol sigma max_arr(1)];
-    else
-        interest_points1 = [interest_points1;x y value octaveRow octaveCol sigma max_arr(1)];
-        for n=2:1:size(max_arr)
-            interest_points2 = [interest_points1;x y value octaveRow octaveCol sigma max_arr(n)];
-        end
-    end
-    
-    %add the points that are above 80%
-    for o=1:1:36
-        if histogram(1,o) ~= max_value && histogram(1,o) >= (max_value*(8/10))
-            interest_points2 = [interest_points1;x y value octaveRow octaveCol sigma o];
+
+    for n=1:1:36
+        if histogram(1,n) == max_value || histogram(1,n) >= (max_value*(8/10))
+            interest_points = [interest_points;x y value octaveRow octaveCol sigma n];
         end
     end
 end
