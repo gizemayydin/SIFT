@@ -1,8 +1,8 @@
 clear all; clc; close all;
 
 %% read the image
-img = imread('cameraman.tif');
-%img = rgb2gray(img);
+img = imread('2.jpg');
+img = rgb2gray(img);
 img = double(img)/255;
 
 %% expand input image by a factor of two using bilinear interpolation
@@ -89,9 +89,9 @@ for i=1:1:4 %for octav
                 %it is a max
                 if ismax == 1 && ismin == 0
                     localMax = [localMax; k l value i j scales(i,j)];
-                end
+                
                 %it is a min
-                if ismin == 1 && ismax ==0
+                elseif ismin == 1 && ismax ==0
                     localMin = [localMin; k l value i j scales(i,j)];
                 end
             end
@@ -256,10 +256,66 @@ for i=1:1:size(newLocalMax,1)
     max_value = max(histogram);
 
     for n=1:1:36
-        if histogram(1,n) == max_value || histogram(1,n) >= (max_value*(8/10))
+        if histogram(1,n) >= (max_value*(8/10))
             interest_points = [interest_points;x y value octaveRow octaveCol sigma n];
         end
     end
+end
+
+%% Extract descriptors
+%x,y,value,octave no,column in octav, scale, binNumber(for orientation)
+descriptors = [];
+
+for i=1:1:size(interest_points,1)
+    
+    grad_mag_img = gradient_magnitude{(interest_points(i,4)-1)*5 + (interest_points(i,5))};
+    grad_orient_img = gradient_orientation{(interest_points(i,4)-1)*5 + (interest_points(i,5))};
+    grad_mag_img = padarray(grad_mag_img,[50 50],'both');
+    grad_orient_img = padarray(grad_orient_img,[50 50],'both');
+
+    x = interest_points(i,1);
+    y = interest_points(i,2);
+    sigma = interest_points(i,6);
+    keypointOrientation = interest_points(i,7);
+    
+    %construct the 16x16
+    xfloor = floor(x);
+    xceil = ceil(x);
+    yfloor = floor(y);
+    yceil = ceil(y);
+    if xfloor == xceil
+        xceil = xceil+1;
+    end
+    if yfloor ==yceil
+        yceil = yceil+1;
+    end
+    
+    magn_window = grad_mag_img(xfloor+50-7:xceil+50+7,yfloor+50-7:yceil+50+7);
+    orient_window = grad_orient_img(xfloor+50-7:xceil+50+7,yfloor+50-7:yceil+50+7);
+    
+    descriptor = [];
+    %for each 4x4 block
+    for j=1:4:13
+        for k=1:4:13
+            histogram = [0 0 0 0 0 0 0 0];
+            magn_block = magn_window(j:j+3,k:k+3);
+            orient_block = orient_window(j:j+3,k:k+3);
+            kernel = fspecial('gaussian', 4, sigma);
+            for m=1:1:4
+                for n=1:1:4
+                    angle = orient_block(m,n);
+                    magnitude = magn_block(m,n);
+                    coeff = kernel(m,n);
+                    binNumber = floor(angle/45)+1;
+                    histogram(binNumber) = histogram(binNumber) + (magnitude*coeff);
+                end
+            end
+            descriptor = [descriptor histogram];
+        end
+    end
+    
+    descriptor = descriptor/norm(descriptor);
+    descriptors = [descriptors; descriptor];
 end
 
 
