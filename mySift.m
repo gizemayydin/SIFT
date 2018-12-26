@@ -1,14 +1,17 @@
-clear all; clc; close all;
+%clear all; clc; close all;
+function [interest_points,descriptors] = mySift(imgpath)
+
 
 %% read the image
-img = imread('img3.jpg');
-img = rgb2gray(img);
+img = imread(imgpath);
+if size(img,3) ~= 1
+    img = rgb2gray(img);
+end
 img = double(img)/255;
 
 %% expand input image by a factor of two using bilinear interpolation
 img = imresize(img,2,'bilinear');
 img = imgaussfilt(img,1);
-imshow(img);
 
 %% scales
 scales = [0 sqrt(2) 2 2*sqrt(2) 4;
@@ -27,29 +30,12 @@ imgPyramid = {img, imgaussfilt(img,scales(1,2)), imgaussfilt(img,scales(1,3)),im
     imgaussfilt(img3,scales(3,1)),imgaussfilt(img3,scales(3,2)),imgaussfilt(img3,scales(3,3)),imgaussfilt(img3,scales(3,4)),imgaussfilt(img3,scales(3,5));
     imgaussfilt(img4,scales(4,1)),imgaussfilt(img4,scales(4,2)),imgaussfilt(img4,scales(4,3)),imgaussfilt(img4,scales(4,4)),imgaussfilt(img4,scales(4,5))};
 
-%% %show the pyramid
-% for i=1:1:4
-%     figure;
-%     for j=1:1:5
-%     subplot(3,3,j);
-%     imshow(imgPyramid{i,j});
-%     end
-% end
 
 %% DOG pyramid
 dogPyramid = {imgPyramid{1,2}-imgPyramid{1,1}, imgPyramid{1,3}-imgPyramid{1,2}, imgPyramid{1,4}-imgPyramid{1,3},imgPyramid{1,5}-imgPyramid{1,4};
     imgPyramid{2,2}-imgPyramid{2,1}, imgPyramid{2,3}-imgPyramid{2,2}, imgPyramid{2,4}-imgPyramid{2,3},imgPyramid{2,5}-imgPyramid{2,4};
     imgPyramid{3,2}-imgPyramid{3,1}, imgPyramid{3,3}-imgPyramid{3,2}, imgPyramid{3,4}-imgPyramid{3,3},imgPyramid{3,5}-imgPyramid{3,4};
     imgPyramid{4,2}-imgPyramid{4,1}, imgPyramid{4,3}-imgPyramid{4,2}, imgPyramid{4,4}-imgPyramid{4,3},imgPyramid{4,5}-imgPyramid{4,4}};
-
-%% %show the pyramid
-% for i=1:1:4
-%     figure;
-%     for j=1:1:4
-%     subplot(2,2,j);
-%     imshow(dogPyramid{i,j});
-%     end
-% end
 
 %% local max and min
 %x,y,value,octave no,column in octav, scale
@@ -89,8 +75,8 @@ for i=1:1:4 %for octav
                 %it is a max
                 if ismax == 1 && ismin == 0
                     localMax = [localMax; k l value i j scales(i,j)];
-                
-                %it is a min
+                    
+                    %it is a min
                 elseif ismin == 1 && ismax ==0
                     localMin = [localMin; k l value i j scales(i,j)];
                 end
@@ -207,10 +193,9 @@ for i=1:1:4
 end
 
 
-% fspecial('gaussian', size, sigma)
 % Now, orientation assignment
 %x,y,value,octave no,column in octav, scale, binNumber(for orientation)
-interest_points = []; %unique ones
+interest_points = []; 
 for i=1:1:size(newLocalMax,1)
     histogram = zeros(1,36);
     x = newLocalMax(i,1);
@@ -254,7 +239,7 @@ for i=1:1:size(newLocalMax,1)
     
     %find the orientation
     max_value = max(histogram);
-
+    
     for n=1:1:36
         if histogram(1,n) >= (max_value*(8/10))
             interest_points = [interest_points;x y value octaveRow octaveCol sigma n];
@@ -264,14 +249,15 @@ end
 
 %% Extract descriptors
 %x,y,value,octave no,column in octav, scale, binNumber(for orientation)
-descriptors = {};
+descriptors = [];
+
 for i=1:1:size(interest_points,1)
     
     grad_mag_img = gradient_magnitude{(interest_points(i,4)-1)*5 + (interest_points(i,5))};
     grad_orient_img = gradient_orientation{(interest_points(i,4)-1)*5 + (interest_points(i,5))};
     grad_mag_img = padarray(grad_mag_img,[50 50],'both');
     grad_orient_img = padarray(grad_orient_img,[50 50],'both');
-
+    
     x = interest_points(i,1);
     y = interest_points(i,2);
     sigma = interest_points(i,6);
@@ -306,15 +292,23 @@ for i=1:1:size(interest_points,1)
                     magnitude = magn_block(m,n);
                     coeff = kernel(m,n);
                     binNumber = floor(angle/45)+1;
-                    histogram(binNumber) = histogram(binNumber) + (magnitude*coeff);
+                    if angle ~= 360
+                        histogram(binNumber) = histogram(binNumber) + (magnitude*coeff);
+                    else
+                        histogram(1) = histogram(1) + (magnitude*coeff);
+                    end
                 end
             end
-            descriptor = [descriptor; histogram];
+            descriptor = [descriptor histogram];
         end
     end
     
-    descriptors{end+1} = descriptor;
+    descriptor = descriptor/norm(descriptor);
+    descriptors = [descriptors; descriptor];
 end
+
+end
+
 
 
 
