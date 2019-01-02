@@ -181,7 +181,9 @@ for i=1:1:4
             for m=2:1:cols-2
                 magn = sqrt((myImg(k+1,m)-myImg(k-1,m))^2 + (myImg(k,m+1)-myImg(k,m-1))^2 );
                 angle = atan2d((myImg(k,m+1)-myImg(k,m-1)),(myImg(k+1,m)-myImg(k-1,m)));
-                angle = angle + 180;
+                if angle < 0
+                    angle = angle + 180;
+                end
                 gradientMag(k,m) = magn;
                 orientation(k,m) = angle;
             end
@@ -243,13 +245,6 @@ for i=1:1:size(newLocalMax,1)
     for n=1:1:36
         closest_three = [];
         if histogram(1,n) >= (max_value*(8/10))
-           closest_three = [closest_three histogram(1,n)];
-           t = n;
-           if size(closest_three) >= 3
-              sort(closest_three,'descend');          
-              interpOri = floor((closest_three(1)+closest_three(2)+ closest_three(3))/3);%%%%%!!!!
-              t = interpOri;
-           end
             interest_points = [interest_points;x y value octaveRow octaveCol sigma n];
         end
     end
@@ -298,7 +293,7 @@ for i=1:1:size(interest_points,1)
             for m=1:1:4
                 for n=1:1:4
                     angle = orient_block(m,n);
-                    angle = mod(angle - ((keypointOrientation*10)-5),360);
+%                     angle = mod(angle - ((keypointOrientation*10)-5),360);
                     magnitude = magn_block(m,n);
                     coeff = kernel(m,n);
                     binNumber = floor(angle/45)+1;
@@ -322,12 +317,12 @@ for i=1:1:size(interest_points,1)
   % newHistBins =  floor(newAngles/45)+1;
   % disp(newHistBins);
     descriptor = descriptor/(norm(descriptor));  
-    for b = 1:128
-        if descriptor(b)>0.2
-            descriptor(b) = 0.2;
-        end
-    end
-    descriptor = descriptor/(norm(descriptor));  
+%     for b = 1:128
+%         if descriptor(b)>0.2
+%             descriptor(b) = 0.2;
+%         end
+%     end
+%     descriptor = descriptor/(norm(descriptor));  
     descriptors = [descriptors; descriptor];
 end
 %disp(descriptor);

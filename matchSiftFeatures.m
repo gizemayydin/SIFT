@@ -25,6 +25,6 @@ for j=1:1:size(matchedLoc2,1)
 end
 loc22 = [loc2(:,2) loc2(:,1) ];
 
-figure;showMatchedFeatures(img1,img2,loc11,loc22,'montage');
-
+figure;showMatchedFeatures(img1,img2,loc11,loc22);
+%,'montage'
 end
