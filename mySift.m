@@ -293,7 +293,7 @@ for i=1:1:size(interest_points,1)
             for m=1:1:4
                 for n=1:1:4
                     angle = orient_block(m,n);
-%                     angle = mod(angle - ((keypointOrientation*10)-5),360);
+                    angle = mod(angle - ((keypointOrientation*10)-5),360);
                     magnitude = magn_block(m,n);
                     coeff = kernel(m,n);
                     binNumber = floor(angle/45)+1;
@@ -317,12 +317,12 @@ for i=1:1:size(interest_points,1)
   % newHistBins =  floor(newAngles/45)+1;
   % disp(newHistBins);
     descriptor = descriptor/(norm(descriptor));  
-%     for b = 1:128
-%         if descriptor(b)>0.2
-%             descriptor(b) = 0.2;
-%         end
-%     end
-%     descriptor = descriptor/(norm(descriptor));  
+    for b = 1:128
+        if descriptor(b)>0.2
+            descriptor(b) = 0.2;
+        end
+    end
+    descriptor = descriptor/(norm(descriptor));  
     descriptors = [descriptors; descriptor];
 end
 %disp(descriptor);
