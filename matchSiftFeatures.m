@@ -33,7 +33,8 @@ for i=1:1:size(matchLocations1,1)
     loc1 = [loc1; uint32(matchLocations1(i,1) * (2^(matchLocations1(i,4)-1))) uint32(matchLocations1(i,2) * (2^(matchLocations1(i,4)-1)))];
 end
 if isempty(loc1)
-    disp("No matches");
+    figure;
+    text(0.5,0.5,'No matches');
     return;
 end
 loc11 = [loc1(:,2) loc1(:,1) ];
@@ -43,7 +44,8 @@ for j=1:1:size(matchLocations2,1)
     loc2 = [loc2; uint32(matchLocations2(j,1) * (2^(matchLocations2(j,4)-1))) uint32(matchLocations2(j,2) * (2^(matchLocations2(j,4)-1)))];
 end
 if isempty(loc2)
-    disp("No matches");
+    figure;
+    text(0.5,0.5,'No matches');
     return;
 end
 loc22 = [loc2(:,2) loc2(:,1) ];
